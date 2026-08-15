@@ -1,5 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { styles } from "@/styles/theme";
+import { getCurrentUser, logout } from "@/lib/auth";
 
 const MODES = [
   {
@@ -33,6 +38,24 @@ const MODES = [
 ];
 
 export default function Home() {
+  const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const u = await getCurrentUser();
+      setUser(u);
+      setLoadingUser(false);
+    })();
+  }, []);
+
+  async function handleLogout() {
+    await logout();
+    setUser(null);
+    router.refresh();
+  }
+
   return (
     <div style={styles.page}>
       <div style={styles.container}>
@@ -43,6 +66,28 @@ export default function Home() {
             <div style={styles.tagline}>Revealed Purpose</div>
           </div>
         </header>
+
+        {!loadingUser && (
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10, marginBottom: 4, gap: 12 }}>
+            {user ? (
+              <>
+                <span style={styles.usageNote}>{user.email}</span>
+                <button onClick={handleLogout} style={styles.unlockButton}>
+                  Se déconnecter
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" style={{ ...styles.unlockLink, textDecoration: "underline" }}>
+                  Se connecter
+                </Link>
+                <Link href="/signup" style={{ ...styles.unlockLink, textDecoration: "underline" }}>
+                  Créer un compte
+                </Link>
+              </>
+            )}
+          </div>
+        )}
 
         <p style={styles.verseAnchor}>
           « Mes temps sont entre tes mains » — Psaume 31:15
@@ -76,4 +121,4 @@ export default function Home() {
       </div>
     </div>
   );
-                  }
+                }
