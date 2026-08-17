@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { generateScript } from "@/lib/anthropic";
+import { createAuthenticatedClient } from "@/lib/supabase";
+import { saveGeneration } from "@/lib/history";
 
 export async function POST(request) {
   let body;
@@ -25,6 +27,28 @@ export async function POST(request) {
 
   try {
     const script = await generateScript(mode, theme, verse);
+
+    // Sauvegarde dans l'historique — non bloquant, uniquement si l'utilisateur est connecté
+    try {
+      const authHeader = request.headers.get("authorization");
+      if (authHeader?.startsWith("Bearer ")) {
+        const token = authHeader.slice(7);
+        const authClient = createAuthenticatedClient(token);
+        const { data: userData } = await authClient.auth.getUser();
+
+        if (userData?.user?.id) {
+          await saveGeneration(authClient, userData.user.id, {
+            mode,
+            theme,
+            verse,
+            script,
+          });
+        }
+      }
+    } catch (historyErr) {
+      console.error("Sauvegarde historique échouée (non bloquant) :", historyErr);
+    }
+
     return NextResponse.json(script, { status: 200 });
   } catch (err) {
     console.error("Erreur génération script:", err);
