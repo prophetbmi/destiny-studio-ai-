@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { styles } from "@/styles/theme";
 import { storage } from "@/lib/storage";
+import { supabase } from "@/lib/supabase";
 import ScriptForm from "@/components/ScriptForm";
 import ScriptResult from "@/components/ScriptResult";
 
@@ -102,9 +103,19 @@ export default function CreatePage({ params }) {
     setError("");
     setResult(null);
     try {
+      const headers = { "Content-Type": "application/json" };
+
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData?.session?.access_token;
+        if (accessToken) {
+          headers["Authorization"] = `Bearer ${accessToken}`;
+        }
+      } catch {}
+
       const response = await fetch("/api/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ theme: theme.trim(), verse: verse.trim(), mode }),
       });
 
@@ -187,4 +198,4 @@ export default function CreatePage({ params }) {
       </div>
     </div>
   );
-        }
+      }
