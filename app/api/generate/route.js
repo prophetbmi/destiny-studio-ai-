@@ -29,37 +29,27 @@ export async function POST(request) {
     const script = await generateScript(mode, theme, verse);
 
     // Sauvegarde dans l'historique — non bloquant, uniquement si l'utilisateur est connecté
-    let debugHistory = null;
     try {
       const authHeader = request.headers.get("authorization");
-      if (!authHeader?.startsWith("Bearer ")) {
-        debugHistory = "Pas d'en-tête Authorization reçu.";
-      } else {
+      if (authHeader?.startsWith("Bearer ")) {
         const token = authHeader.slice(7);
         const authClient = createAuthenticatedClient(token);
-        const { data: userData, error: userErr } = await authClient.auth.getUser();
+        const { data: userData } = await authClient.auth.getUser();
 
-        if (userErr) {
-          debugHistory = `Erreur auth.getUser(): ${userErr.message}`;
-        } else if (!userData?.user?.id) {
-          debugHistory = "auth.getUser() n'a retourné aucun utilisateur.";
-        } else {
-          const { error: insertErr } = await authClient
-            .from("generations")
-            .insert([{ user_id: userData.user.id, mode, theme, verse, script }]);
-
-          if (insertErr) {
-            debugHistory = `Erreur insertion: ${insertErr.message}`;
-          } else {
-            debugHistory = "OK — sauvegardé avec succès.";
-          }
+        if (userData?.user?.id) {
+          await saveGeneration(authClient, userData.user.id, {
+            mode,
+            theme,
+            verse,
+            script,
+          });
         }
       }
     } catch (historyErr) {
-      debugHistory = `Exception: ${historyErr.message}`;
+      console.error("Sauvegarde historique échouée (non bloquant) :", historyErr);
     }
 
-    return NextResponse.json({ ...script, _debugHistory: debugHistory }, { status: 200 });
+    return NextResponse.json(script, { status: 200 });
   } catch (err) {
     console.error("Erreur génération script:", err);
 
@@ -73,4 +63,4 @@ export async function POST(request) {
       { status: isConfigError ? 503 : 502 }
     );
   }
-                              }
+}
