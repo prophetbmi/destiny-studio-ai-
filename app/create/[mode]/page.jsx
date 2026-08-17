@@ -125,9 +125,6 @@ export default function CreatePage({ params }) {
         throw new Error(data.error || "Erreur inconnue");
       }
 
-      if (data._debugHistory) {
-  alert("DEBUG historique: " + data._debugHistory);
-      }
       setResult(data);
 
       try {
