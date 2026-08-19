@@ -75,5 +75,57 @@ export default function HistoryPage() {
     }
   }
 
-  return <div>Chargement...</div>;
+  function formatDate2(iso) {
+    return iso;
+  }
+
+  return (
+    <div style={styles.page}>
+      <div style={styles.container}>
+        <header style={styles.header}>
+          <div style={styles.monogram}>D·P</div>
+          <div>
+            <div style={styles.brand}>DESTINY PROGRAM</div>
+            <div style={styles.tagline}>Revealed Purpose</div>
+          </div>
+        </header>
+
+        <div style={{ marginTop: 10, marginBottom: 16 }}>
+          <Link href="/" style={{ ...styles.unlockLink, textDecoration: "underline" }}>
+            ← Retour à l'accueil
+          </Link>
+        </div>
+
+        <p style={styles.pitch}>Historique de tes créations</p>
+
+        {loadingUser && <p style={styles.usageNote}>Chargement…</p>}
+
+        {!loadingUser && !user && (
+          <div style={styles.resultCard}>
+            <p style={styles.usageNote}>
+              Connecte-toi pour voir l'historique de tes créations.
+            </p>
+            <Link href="/login" style={{ ...styles.unlockLink, textDecoration: "underline" }}>
+              Se connecter
+            </Link>
+          </div>
+        )}
+
+        {!loadingUser && user && loadingItems && (
+          <p style={styles.usageNote}>Chargement de ton historique…</p>
+        )}
+
+        {!loadingUser && user && error && (
+          <p style={styles.usageNote}>{error}</p>
+        )}
+
+        {!loadingUser && user && !loadingItems && !error && items.length === 0 && (
+          <p style={styles.usageNote}>
+            Aucune génération pour l'instant. Crée ton premier script !
+          </p>
+        )}
+      </div>
+    </div>
+  );
+      }
 }
