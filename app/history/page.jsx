@@ -123,6 +123,46 @@ export default function HistoryPage() {
           <p style={styles.usageNote}>
             Aucune génération pour l'instant. Crée ton premier script !
           </p>
+        )}{!loadingUser && user && !loadingItems && items.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {items.map((item) => (
+              <div key={item.id} style={styles.modeCard}>
+                <div style={styles.modeCardHeaderRow}>
+                  <span style={styles.modeCardTitle}>
+                    {item.theme || "Sans thème"}
+                  </span>
+                  <span style={styles.modeBadgeAvailable}>{item.mode}</span>
+                </div>
+                <p style={styles.modeCardDescription}>
+                  {item.verse ? item.verse : "Verset non précisé"}
+                </p>
+                <p style={styles.usageNote}>{formatDate(item.created_at)}</p>
+
+                <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
+                  <button
+                    onClick={() =>
+                      setExpandedId(expandedId === item.id ? null : item.id)
+                    }
+                    style={styles.unlockButton}
+                  >
+                    {expandedId === item.id ? "Masquer" : "Voir le script"}
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    style={styles.unlockButton}
+                  >
+                    Supprimer
+                  </button>
+                </div>
+
+                {expandedId === item.id && item.script && (
+                  <div style={{ marginTop: 12 }}>
+                    <ScriptResult result={item.script} />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
