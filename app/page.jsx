@@ -71,7 +71,7 @@ export default function Home() {
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10, marginBottom: 4, gap: 12 }}>
             {user ? (
               <>
-                <span style={styles.usageNote}>{user.email}</span>
+                <span style={styles.usageNote}>{user.email}</span><Link href="/history" style={{ ...styles.unlockLink, textDecoration: "underline" }}>Historique</Link>
                 <button onClick={handleLogout} style={styles.unlockButton}>
                   Se déconnecter
                 </button>
