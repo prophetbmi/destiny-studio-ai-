@@ -73,6 +73,21 @@ export default function CreatePage({ params }) {
     })();
   }, []);
 
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+        storage.delete(LAST_RESULT_KEY).catch(() => {});
+        setTheme("");
+        setVerse("");
+        setResult(null);
+      }
+    });
+
+    return () => {
+      listener?.subscription?.unsubscribe();
+    };
+  }, []);
+
   const remaining = usageCount === null ? null : Math.max(0, FREE_LIMIT - usageCount);
   const locked = !creatorMode && remaining === 0;
 
@@ -198,4 +213,4 @@ export default function CreatePage({ params }) {
       </div>
     </div>
   );
-      }
+}
