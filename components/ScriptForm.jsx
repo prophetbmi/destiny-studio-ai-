@@ -27,6 +27,7 @@ export default function ScriptForm({
   onUnlock,
   error,
   mode,
+  isLoggedIn,
 }) {
   const loadingHint = loading ? LOADING_HINTS[mode] : null;
 
@@ -69,10 +70,19 @@ export default function ScriptForm({
         <p style={styles.creatorNote}>✦ Générations illimitées — mode concepteur</p>
       ) : (
         <>
-          {usageCount !== null && !locked && (
+          {isLoggedIn ? (
             <p style={styles.usageNote}>
-              {remaining} génération{remaining !== 1 ? "s" : ""} gratuite{remaining !== 1 ? "s" : ""} restante{remaining !== 1 ? "s" : ""}
+              {remaining === null
+                ? "Crédits : —"
+                : `${remaining} crédit${remaining !== 1 ? "s" : ""} restant${remaining !== 1 ? "s" : ""}`}
             </p>
+          ) : (
+            usageCount !== null &&
+            !locked && (
+              <p style={styles.usageNote}>
+                {remaining} génération{remaining !== 1 ? "s" : ""} gratuite{remaining !== 1 ? "s" : ""} restante{remaining !== 1 ? "s" : ""}
+              </p>
+            )
           )}
           <p style={styles.unlockLink} onClick={() => setShowUnlock((v) => !v)}>
             code créateur ?
@@ -96,9 +106,13 @@ export default function ScriptForm({
 
       {locked && (
         <div style={styles.paywall}>
-          <p style={styles.paywallTitle}>Limite gratuite atteinte</p>
+          <p style={styles.paywallTitle}>
+            {isLoggedIn ? "Crédits épuisés" : "Limite gratuite atteinte"}
+          </p>
           <p style={styles.paywallText}>
-            Tu as utilisé tes {freeLimit} générations gratuites. Passe à l'accès illimité pour continuer à produire tes scripts.
+            {isLoggedIn
+              ? "Tu n'as plus de crédits disponibles. Achète un pack de crédits pour continuer à produire tes scripts."
+              : `Tu as utilisé tes ${freeLimit} générations gratuites. Passe à l'accès illimité pour continuer à produire tes scripts.`}
           </p>
         </div>
       )}
@@ -106,4 +120,4 @@ export default function ScriptForm({
       {error && <p style={styles.error}>{error}</p>}
     </div>
   );
-      }
+          }
