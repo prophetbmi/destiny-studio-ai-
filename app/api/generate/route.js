@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { generateScript } from "@/lib/anthropic";
 import { createAuthenticatedClient } from "@/lib/supabase";
 import { saveGeneration } from "@/lib/history";
+import { getMode } from "@/lib/modes";
+import { getCredits, deductCredits } from "@/lib/credits";
 
 export async function POST(request) {
   let body;
@@ -25,28 +27,69 @@ export async function POST(request) {
     );
   }
 
+  // Identifier l'utilisateur connecté, s'il y en a un
+  let userId = null;
+  let authClient = null;
+  const authHeader = request.headers.get("authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    try {
+      const token = authHeader.slice(7);
+      authClient = createAuthenticatedClient(token);
+      const { data: userData } = await authClient.auth.getUser();
+      if (userData?.user?.id) {
+        userId = userData.user.id;
+      }
+    } catch (authErr) {
+      console.error("Vérification du token échouée :", authErr);
+    }
+  }
+
+  // Vérification des crédits — uniquement pour les utilisateurs connectés
+  const modeConfig = getMode(mode);
+  const creditCost = modeConfig.creditCost || 1;
+
+  if (userId) {
+    try {
+      const currentCredits = await getCredits(userId);
+      if (currentCredits < creditCost) {
+        return NextResponse.json(
+          { error: "Crédits insuffisants. Achète un pack de crédits pour continuer." },
+          { status: 402 }
+        );
+      }
+    } catch (creditsErr) {
+      console.error("Vérification des crédits échouée :", creditsErr);
+      return NextResponse.json(
+        { error: "Impossible de vérifier tes crédits pour le moment. Réessaie dans un instant." },
+        { status: 503 }
+      );
+    }
+  }
+
   try {
     const script = await generateScript(mode, theme, verse);
 
-    // Sauvegarde dans l'historique — non bloquant, uniquement si l'utilisateur est connecté
-    try {
-      const authHeader = request.headers.get("authorization");
-      if (authHeader?.startsWith("Bearer ")) {
-        const token = authHeader.slice(7);
-        const authClient = createAuthenticatedClient(token);
-        const { data: userData } = await authClient.auth.getUser();
-
-        if (userData?.user?.id) {
-          await saveGeneration(authClient, userData.user.id, {
-            mode,
-            theme,
-            verse,
-            script,
-          });
-        }
+    // Déduction des crédits — uniquement si connecté, après génération réussie
+    if (userId) {
+      try {
+        await deductCredits(userId, creditCost);
+      } catch (deductErr) {
+        console.error("Déduction des crédits échouée :", deductErr);
       }
-    } catch (historyErr) {
-      console.error("Sauvegarde historique échouée (non bloquant) :", historyErr);
+    }
+
+    // Sauvegarde dans l'historique — non bloquant, uniquement si l'utilisateur est connecté
+    if (userId && authClient) {
+      try {
+        await saveGeneration(authClient, userId, {
+          mode,
+          theme,
+          verse,
+          script,
+        });
+      } catch (historyErr) {
+        console.error("Sauvegarde historique échouée (non bloquant) :", historyErr);
+      }
     }
 
     return NextResponse.json(script, { status: 200 });
