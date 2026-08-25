@@ -69,6 +69,13 @@ export async function POST(request) {
   try {
     const script = await generateScript(mode, theme, verse);
 
+    console.log("Usage tokens:", {
+      mode,
+      creditCost,
+      inputTokens: script.usage?.inputTokens,
+      outputTokens: script.usage?.outputTokens,
+    });
+
     // Déduction des crédits — uniquement si connecté, après génération réussie
     if (userId) {
       try {
@@ -106,4 +113,4 @@ export async function POST(request) {
       { status: isConfigError ? 503 : 502 }
     );
   }
-}
+          }
