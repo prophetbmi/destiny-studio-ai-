@@ -19,12 +19,6 @@ export default function ScriptForm({
   usageCount,
   remaining,
   freeLimit,
-  showUnlock,
-  setShowUnlock,
-  unlockInput,
-  setUnlockInput,
-  unlockError,
-  onUnlock,
   error,
   mode,
   isLoggedIn,
@@ -84,23 +78,6 @@ export default function ScriptForm({
               </p>
             )
           )}
-          <p style={styles.unlockLink} onClick={() => setShowUnlock((v) => !v)}>
-            code créateur ?
-          </p>
-          {showUnlock && (
-            <div style={styles.unlockRow}>
-              <input
-                value={unlockInput}
-                onChange={(e) => setUnlockInput(e.target.value)}
-                placeholder="Code"
-                style={styles.unlockInput}
-              />
-              <button onClick={onUnlock} style={styles.unlockButton}>
-                OK
-              </button>
-            </div>
-          )}
-          {unlockError && <p style={styles.error}>{unlockError}</p>}
         </>
       )}
 
@@ -111,8 +88,8 @@ export default function ScriptForm({
           </p>
           <p style={styles.paywallText}>
             {isLoggedIn
-              ? "Tu n'as plus de crédits disponibles. Achète un pack de crédits pour continuer à produire tes scripts."
-              : `Tu as utilisé tes ${freeLimit} générations gratuites. Passe à l'accès illimité pour continuer à produire tes scripts.`}
+              ? "Tu n'as plus de crédits disponibles pour le moment. Reviens bientôt — de nouvelles options arrivent."
+              : `Tu as utilisé tes ${freeLimit} générations gratuites. De nouvelles options arrivent bientôt.`}
           </p>
         </div>
       )}
@@ -120,4 +97,4 @@ export default function ScriptForm({
       {error && <p style={styles.error}>{error}</p>}
     </div>
   );
-          }
+            }
