@@ -8,7 +8,6 @@ import ScriptForm from "@/components/ScriptForm";
 import ScriptResult from "@/components/ScriptResult";
 
 const FREE_LIMIT = 3;
-const CREATOR_CODE = "BMI@1998";
 const LAST_RESULT_KEY = "last_result";
 
 const MODE_META = {
@@ -34,15 +33,18 @@ async function fetchCredits() {
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     const accessToken = sessionData?.session?.access_token;
-    if (!accessToken) return null;
+    if (!accessToken) return { credits: null, isCreator: false };
 
     const response = await fetch("/api/credits", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     const data = await response.json();
-    return typeof data.credits === "number" ? data.credits : null;
+    return {
+      credits: typeof data.credits === "number" ? data.credits : null,
+      isCreator: Boolean(data.isCreator),
+    };
   } catch {
-    return null;
+    return { credits: null, isCreator: false };
   }
 }
 
@@ -56,12 +58,9 @@ export default function CreatePage({ params }) {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [usageCount, setUsageCount] = useState(null);
-  const [creatorMode, setCreatorMode] = useState(false);
-  const [showUnlock, setShowUnlock] = useState(false);
-  const [unlockInput, setUnlockInput] = useState("");
-  const [unlockError, setUnlockError] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [credits, setCredits] = useState(null);
+  const [isCreator, setIsCreator] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -71,12 +70,6 @@ export default function CreatePage({ params }) {
       } catch {
         setUsageCount(0);
       }
-      try {
-        const storedCreator = await storage.get("creator_mode");
-        if (storedCreator && storedCreator.value === "true") {
-          setCreatorMode(true);
-        }
-      } catch {}
       try {
         const storedLast = await storage.get(LAST_RESULT_KEY);
         if (storedLast) {
@@ -92,8 +85,9 @@ export default function CreatePage({ params }) {
       const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData?.session) {
         setIsLoggedIn(true);
-        const c = await fetchCredits();
+        const { credits: c, isCreator: creator } = await fetchCredits();
         setCredits(c);
+        setIsCreator(creator);
       }
     })();
   }, []);
@@ -108,11 +102,13 @@ export default function CreatePage({ params }) {
 
         if (event === "SIGNED_IN") {
           setIsLoggedIn(true);
-          const c = await fetchCredits();
+          const { credits: c, isCreator: creator } = await fetchCredits();
           setCredits(c);
+          setIsCreator(creator);
         } else {
           setIsLoggedIn(false);
           setCredits(null);
+          setIsCreator(false);
         }
       }
     });
@@ -128,20 +124,7 @@ export default function CreatePage({ params }) {
     ? null
     : Math.max(0, FREE_LIMIT - usageCount);
 
-  const locked = !creatorMode && (isLoggedIn ? credits !== null && credits <= 0 : remaining === 0);
-
-  async function tryUnlock() {
-    if (unlockInput.trim() === CREATOR_CODE) {
-      setCreatorMode(true);
-      setShowUnlock(false);
-      setUnlockError("");
-      try {
-        await storage.set("creator_mode", "true");
-      } catch {}
-    } else {
-      setUnlockError("Code incorrect.");
-    }
-  }
+  const locked = !isCreator && (isLoggedIn ? credits !== null && credits <= 0 : remaining === 0);
 
   async function handleGenerate() {
     if (!theme.trim() || locked) return;
@@ -194,10 +177,10 @@ export default function CreatePage({ params }) {
         );
       } catch {}
 
-      if (isLoggedIn) {
-        const c = await fetchCredits();
+      if (isLoggedIn && !isCreator) {
+        const { credits: c } = await fetchCredits();
         setCredits(c);
-      } else if (!creatorMode) {
+      } else if (!isLoggedIn) {
         const newCount = (usageCount || 0) + 1;
         setUsageCount(newCount);
         try {
@@ -237,16 +220,10 @@ export default function CreatePage({ params }) {
           onGenerate={handleGenerate}
           loading={loading}
           locked={locked}
-          creatorMode={creatorMode}
+          creatorMode={isCreator}
           usageCount={usageCount}
           remaining={remaining}
           freeLimit={FREE_LIMIT}
-          showUnlock={showUnlock}
-          setShowUnlock={setShowUnlock}
-          unlockInput={unlockInput}
-          setUnlockInput={setUnlockInput}
-          unlockError={unlockError}
-          onUnlock={tryUnlock}
           error={error}
           mode={mode}
           isLoggedIn={isLoggedIn}
@@ -256,4 +233,4 @@ export default function CreatePage({ params }) {
       </div>
     </div>
   );
-        }
+    }
