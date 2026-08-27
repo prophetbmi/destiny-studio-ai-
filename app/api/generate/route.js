@@ -29,6 +29,7 @@ export async function POST(request) {
 
   // Identifier l'utilisateur connecté, s'il y en a un
   let userId = null;
+  let userEmail = null;
   let authClient = null;
   const authHeader = request.headers.get("authorization");
   if (authHeader?.startsWith("Bearer ")) {
@@ -38,17 +39,20 @@ export async function POST(request) {
       const { data: userData } = await authClient.auth.getUser();
       if (userData?.user?.id) {
         userId = userData.user.id;
+        userEmail = userData.user.email;
       }
     } catch (authErr) {
       console.error("Vérification du token échouée :", authErr);
     }
   }
 
-  // Vérification des crédits — uniquement pour les utilisateurs connectés
+  const isCreator = Boolean(userEmail && userEmail === process.env.CREATOR_EMAIL);
+
+  // Vérification des crédits — utilisateurs connectés, sauf le compte concepteur
   const modeConfig = getMode(mode);
   const creditCost = modeConfig.creditCost || 1;
 
-  if (userId) {
+  if (userId && !isCreator) {
     try {
       const currentCredits = await getCredits(userId);
       if (currentCredits < creditCost) {
@@ -72,12 +76,13 @@ export async function POST(request) {
     console.log("Usage tokens:", {
       mode,
       creditCost,
+      isCreator,
       inputTokens: script.usage?.inputTokens,
       outputTokens: script.usage?.outputTokens,
     });
 
-    // Déduction des crédits — uniquement si connecté, après génération réussie
-    if (userId) {
+    // Déduction des crédits — connecté et pas le compte concepteur, après génération réussie
+    if (userId && !isCreator) {
       try {
         await deductCredits(userId, creditCost);
       } catch (deductErr) {
@@ -113,4 +118,4 @@ export async function POST(request) {
       { status: isConfigError ? 503 : 502 }
     );
   }
-          }
+      }
