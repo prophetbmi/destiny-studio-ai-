@@ -75,10 +75,6 @@ export default function HistoryPage() {
     }
   }
 
-  function formatDate2(iso) {
-    return iso;
-  }
-
   return (
     <div style={styles.page}>
       <div style={styles.container}>
@@ -167,4 +163,4 @@ export default function HistoryPage() {
       </div>
     </div>
   );
-}
+     }
