@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { styles } from "@/styles/theme";
 import { getCurrentUser, logout } from "@/lib/auth";
+import Header from "@/components/Header";
 
 const MODES = [
   {
@@ -59,13 +60,7 @@ export default function Home() {
   return (
     <div style={styles.page}>
       <div style={styles.container}>
-        <header style={styles.header}>
-          <div style={styles.monogram}>D·P</div>
-          <div>
-            <div style={styles.brand}>DESTINY PROGRAM</div>
-            <div style={styles.tagline}>Revealed Purpose</div>
-          </div>
-        </header>
+        <Header />
 
         {!loadingUser && (
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10, marginBottom: 4, gap: 12 }}>
@@ -121,4 +116,4 @@ export default function Home() {
       </div>
     </div>
   );
-                }
+}
