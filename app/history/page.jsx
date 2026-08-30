@@ -6,6 +6,7 @@ import { styles } from "@/styles/theme";
 import { supabase, createAuthenticatedClient } from "@/lib/supabase";
 import { getHistory, deleteHistory } from "@/lib/history";
 import ScriptResult from "@/components/ScriptResult";
+import Header from "@/components/Header";
 
 export default function HistoryPage() {
   const [loadingUser, setLoadingUser] = useState(true);
@@ -78,13 +79,7 @@ export default function HistoryPage() {
   return (
     <div style={styles.page}>
       <div style={styles.container}>
-        <header style={styles.header}>
-          <div style={styles.monogram}>D·P</div>
-          <div>
-            <div style={styles.brand}>DESTINY PROGRAM</div>
-            <div style={styles.tagline}>Revealed Purpose</div>
-          </div>
-        </header>
+        <Header />
 
         <div style={{ marginTop: 10, marginBottom: 16 }}>
           <Link href="/" style={{ ...styles.unlockLink, textDecoration: "underline" }}>
@@ -163,4 +158,4 @@ export default function HistoryPage() {
       </div>
     </div>
   );
-     }
+                          }
