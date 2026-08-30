@@ -6,6 +6,7 @@ import { storage } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
 import ScriptForm from "@/components/ScriptForm";
 import ScriptResult from "@/components/ScriptResult";
+import Header from "@/components/Header";
 
 const FREE_LIMIT = 3;
 const LAST_RESULT_KEY = "last_result";
@@ -197,13 +198,7 @@ export default function CreatePage({ params }) {
   return (
     <div style={styles.page}>
       <div style={styles.container}>
-        <header style={styles.header}>
-          <div style={styles.monogram}>D·P</div>
-          <div>
-            <div style={styles.brand}>DESTINY PROGRAM</div>
-            <div style={styles.tagline}>Revealed Purpose</div>
-          </div>
-        </header>
+        <Header />
 
         <p style={styles.verseAnchor}>
           « Mes temps sont entre tes mains » — Psaume 31:15
@@ -233,4 +228,4 @@ export default function CreatePage({ params }) {
       </div>
     </div>
   );
-    }
+            }
