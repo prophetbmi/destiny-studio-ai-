@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { styles } from "@/styles/theme";
 import { login } from "@/lib/auth";
+import Header from "@/components/Header";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,13 +31,7 @@ export default function LoginPage() {
   return (
     <div style={styles.page}>
       <div style={styles.container}>
-        <header style={styles.header}>
-          <div style={styles.monogram}>D·P</div>
-          <div>
-            <div style={styles.brand}>DESTINY PROGRAM</div>
-            <div style={styles.tagline}>Revealed Purpose</div>
-          </div>
-        </header>
+        <Header />
 
         <p style={styles.pitch}>Connecte-toi à ton compte.</p>
 
