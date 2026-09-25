@@ -4,6 +4,7 @@ import { createAuthenticatedClient } from "@/lib/supabase";
 import { saveGeneration } from "@/lib/history";
 import { getMode } from "@/lib/modes";
 import { getCredits, deductCredits } from "@/lib/credits";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function POST(request) {
   let body;
@@ -47,6 +48,24 @@ export async function POST(request) {
   }
 
   const isCreator = Boolean(userEmail && userEmail === process.env.CREATOR_EMAIL);
+
+  // Rate limiting — sauf pour le compte concepteur
+  if (!isCreator) {
+    const ip = request.headers.get("x-forwarded-for") || "unknown";
+    const rateLimitId = userId ? `user:${userId}` : `ip:${ip}`;
+
+    try {
+      const { allowed } = await checkRateLimit(rateLimitId);
+      if (!allowed) {
+        return NextResponse.json(
+          { error: "Trop de tentatives. Attends une minute avant de réessayer." },
+          { status: 429 }
+        );
+      }
+    } catch (rateLimitErr) {
+      console.error("Vérification rate limit échouée :", rateLimitErr);
+    }
+  }
 
   // Vérification des crédits — utilisateurs connectés, sauf le compte concepteur
   const modeConfig = getMode(mode);
