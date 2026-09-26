@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { styles } from "@/styles/theme";
 
 const LOADING_HINTS = {
@@ -91,6 +92,11 @@ export default function ScriptForm({
               ? "Tu n'as plus de crédits disponibles pour le moment. Reviens bientôt — de nouvelles options arrivent."
               : `Tu as utilisé tes ${freeLimit} générations gratuites. De nouvelles options arrivent bientôt.`}
           </p>
+          {isLoggedIn && (
+            <Link href="/credits" style={{ ...styles.legalLink, fontSize: 12 }}>
+              Voir les packs de crédits
+            </Link>
+          )}
         </div>
       )}
 
