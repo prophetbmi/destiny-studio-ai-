@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { styles } from "@/styles/theme";
 import { login } from "@/lib/auth";
 import Header from "@/components/Header";
+
+const TURNSTILE_SITE_KEY = "0x4AAAAAAFDYrqsB-rM7e6G4";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,16 +15,55 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
+
+  const widgetRef = useRef(null);
+  const widgetIdRef = useRef(null);
+
+  useEffect(() => {
+    const scriptId = "turnstile-script";
+
+    function renderWidget() {
+      if (!window.turnstile || !widgetRef.current || widgetIdRef.current) return;
+      widgetIdRef.current = window.turnstile.render(widgetRef.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: (token) => setCaptchaToken(token),
+        "expired-callback": () => setCaptchaToken(""),
+      });
+    }
+
+    if (document.getElementById(scriptId)) {
+      renderWidget();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+    script.async = true;
+    script.onload = renderWidget;
+    document.body.appendChild(script);
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+
+    if (!captchaToken) {
+      setError("Merci de compléter la vérification anti-robot.");
+      return;
+    }
+
     setLoading(true);
     try {
-      await login({ email: email.trim(), password });
+      await login({ email: email.trim(), password, captchaToken });
       router.push("/");
     } catch (err) {
       setError(err.message);
+      if (window.turnstile && widgetIdRef.current) {
+        window.turnstile.reset(widgetIdRef.current);
+      }
+      setCaptchaToken("");
     } finally {
       setLoading(false);
     }
@@ -56,6 +97,8 @@ export default function LoginPage() {
             required
           />
 
+          <div ref={widgetRef} style={{ marginTop: 14 }} />
+
           <button
             type="submit"
             disabled={loading}
@@ -76,4 +119,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-}
+  }
