@@ -368,4 +368,55 @@ export const styles = {
     margin: "0 0 8px",
     lineHeight: 1.5,
   },
+  legalTitle: {
+    fontSize: 22,
+    color: "#F2EEE3",
+    fontWeight: "bold",
+    margin: "20px 0 4px",
+  },
+  legalUpdated: {
+    fontSize: 12,
+    color: "#8FA0BF",
+    marginBottom: 24,
+  },
+  legalHeading: {
+    fontSize: 15,
+    color: "#C9A24B",
+    letterSpacing: 0.5,
+    margin: "24px 0 8px",
+    fontWeight: "bold",
+  },
+  legalParagraph: {
+    fontSize: 14,
+    color: "#F2EEE3",
+    lineHeight: 1.6,
+    margin: "0 0 12px",
+  },
+  legalList: {
+    margin: "0 0 12px",
+    paddingLeft: 20,
+  },
+  legalListItem: {
+    fontSize: 14,
+    color: "#F2EEE3",
+    lineHeight: 1.6,
+    marginBottom: 6,
+  },
+  legalLink: {
+    color: "#C9A24B",
+    textDecoration: "underline",
+  },
+  footerRow: {
+    display: "flex",
+    justifyContent: "center",
+    gap: 16,
+    marginTop: 32,
+    paddingTop: 16,
+    borderTop: "1px solid rgba(201,162,75,0.15)",
+  },
+  footerLink: {
+    fontSize: 12,
+    color: "#6B7A99",
+    textDecoration: "underline",
+  },
 };

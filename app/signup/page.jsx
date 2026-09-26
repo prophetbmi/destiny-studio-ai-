@@ -134,6 +134,11 @@ export default function SignupPage() {
             </Link>
           </p>
         </form>
+
+        <div style={styles.footerRow}>
+          <Link href="/privacy" style={styles.footerLink}>Confidentialité</Link>
+          <Link href="/terms" style={styles.footerLink}>Conditions d'utilisation</Link>
+        </div>
       </div>
     </div>
   );
