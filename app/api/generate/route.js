@@ -28,6 +28,23 @@ export async function POST(request) {
     );
   }
 
+  const MAX_THEME_LENGTH = 500;
+  const MAX_VERSE_LENGTH = 500;
+
+  if (theme.length > MAX_THEME_LENGTH) {
+    return NextResponse.json(
+      { error: `Le thème est trop long (max ${MAX_THEME_LENGTH} caractères).` },
+      { status: 400 }
+    );
+  }
+
+  if (verse.length > MAX_VERSE_LENGTH) {
+    return NextResponse.json(
+      { error: `Le verset est trop long (max ${MAX_VERSE_LENGTH} caractères).` },
+      { status: 400 }
+    );
+  }
+
   // Identifier l'utilisateur connecté, s'il y en a un
   let userId = null;
   let userEmail = null;
